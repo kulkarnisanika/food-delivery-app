@@ -1,63 +1,63 @@
-import React, { useEffect, useState } from 'react'
 import Header from './Header'
 import { Box, Card, Divider, Stack } from '@mui/material'
 import RestaurantList from './RestaurantList'
 import { useDispatch, useSelector } from 'react-redux'
-import { addRestaurants } from '../utils/redux/restaurantsSlice'
-import { addWhatsOnYourMind } from '../utils/redux/whatsOnYourMindSlice'
 import ImageCarousel from './ImageCarousel'
-import { addTopRestaurants } from '../utils/redux/topRestaurantsSlice'
 import RestaurantCard from './RestaurantCard'
+import { getSwiggyRestaurantList } from '../services/swiggyService'
+import { parseAndDispatchSwiggyData } from '../logic/reduxController'
+import axios from 'axios';
+import { useEffect, useState } from 'react'
+
 
 const FoodAppHome = () => {
 
     const [restaurantData, setRestaurantData] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null)
-
     const dispatch = useDispatch();
-    const restaurantList = useSelector((store) => store?.restaurants);
-    const whatsOnYourMind = useSelector((store) => store?.whatsOnYourMind);
-    const topRestaurants = useSelector((store) => store?.topRestaurants);
 
-    const images = whatsOnYourMind?.map((item) => `https://media-assets.swiggy.com/swiggy/image/upload/fl_lossy,f_auto,q_auto,w_288,h_360/${item?.imageId}`)
-    const getSwiggyRestaurantList = async (lat, lng) => {
+    const { restaurants: restaurantList, whatsOnYourMind, topRestaurants } = useSelector((store) => store);
+    // const fetchMoreRestaurants = async () => {
+    //     const url = 'https://www.swiggy.com/dapi/restaurants/list/update';
 
-        const url = `https://www.swiggy.com/dapi/restaurants/list/v5?lat=${lat}&lng=${lng}&is-seo-homepage-enabled=true&page_type=DESKTOP_WEB_LISTING`;
-        const res = await fetch(url);
-        if (!res.ok) throw new Error('Failed to fetch Swiggy data');
-        const json = await res.json();
-        return json?.data?.cards;
-    }
+    //     const payload = {
+    //         lat: '21.99740',
+    //         lng: '79.00110',
+    //         nextOffset: 'CJhlELQ4KIDg3NyVhJW2OjCnEzgC',
+    //         widgetOffset: {
+    //             NewListingView_category_bar_chicletranking_TwoRows: '',
+    //             NewListingView_category_bar_chicletranking_TwoRows_Rendition: '',
+    //             Restaurant_Group_WebView_SEO_PB_Theme: '',
+    //             collectionV5RestaurantListWidget_SimRestoRelevance_food_seo: '9',
+    //             inlineFacetFilter: '',
+    //             restaurantCountWidget: '',
+    //         },
+    //         filters: {},
+    //         seoParams: {
+    //             seoUrl: 'https://www.swiggy.com/restaurants',
+    //             pageType: 'FOOD_HOMEPAGE',
+    //             apiName: 'FoodHomePage',
+    //             businessLine: 'FOOD',
+    //         },
+    //         page_type: 'DESKTOP_WEB_LISTING',
+    //         _csrf: csrfToken,
+    //     };
 
-    const setSwiggyData = (data) => {
-
-        data?.forEach((restaurant) => {
-
-
-            if (restaurant?.card?.card?.id === "restaurant_grid_listing_v2") {
-                let restaurantList = restaurant?.card?.card?.gridElements?.infoWithStyle?.restaurants;
-                dispatch(addRestaurants(restaurantList))
-            }
-            if (restaurant?.card?.card?.id === "top_brands_for_you") {
-                let restaurantList = restaurant?.card?.card?.gridElements?.infoWithStyle?.restaurants;
-                dispatch(addTopRestaurants(restaurantList))
-            }
-            if (restaurant?.card?.card?.id === "whats_on_your_mind") {
-                let dishes = restaurant?.card?.card?.gridElements?.infoWithStyle?.info;
-                dispatch(addWhatsOnYourMind(dishes))
-            }
-
-        })
-
-    }
+    //     try {
+    //         const res = await axios.post('http://localhost:5000/api/swiggy', payload);
+    //         return response.data;
+    //     } catch (error) {
+    //         console.error('POST error:', error);
+    //     }
+    // };
 
     useEffect(() => {
         const fetchData = async () => {
             try {
                 setIsLoading(true)
                 const response = await getSwiggyRestaurantList(21.99740, 79.00110);
-                setRestaurantData(response)
+                setRestaurantData(response);
             }
             catch (e) {
                 setError(e)
@@ -69,11 +69,11 @@ const FoodAppHome = () => {
         fetchData();
     }, []);
 
-
-
     useEffect(() => {
-        setSwiggyData(restaurantData);
+        parseAndDispatchSwiggyData(restaurantData, dispatch);
     }, [restaurantData])
+
+    const images = whatsOnYourMind?.map((item) => `https://media-assets.swiggy.com/swiggy/image/upload/fl_lossy,f_auto,q_auto,w_288,h_360/${item?.imageId}`)
 
     return (
         <Box padding={0.5}>
@@ -89,7 +89,7 @@ const FoodAppHome = () => {
                             title="Top Restaurants"
                             items={topRestaurants}
                             renderItem={(restaurant, index) => (
-                                <RestaurantCard cardData={restaurant?.info}/>
+                                <RestaurantCard cardData={restaurant?.info} />
                             )}
                         />
                         {isLoading ? <h1>Loading....</h1> :
