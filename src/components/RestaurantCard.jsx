@@ -1,13 +1,11 @@
-import { Box, Card, CardActionArea, CardContent, CardMedia, Divider, IconButton, Stack, Typography } from '@mui/material'
+import {  Card, CardActionArea, CardContent, CardMedia, Divider, IconButton, Stack, Typography } from '@mui/material'
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 
 const RestaurantCard = ({ cardData }) => {
 
-    console.log("card", cardData)
     const { avgRatingString, name, cuisines, isOpen, sla: { deliveryTime, slaString }, veg, cloudinaryImageId } = cardData;
     return (
         <div>
-
             <Card elevation={0} sx={{ width: 350 }}>
                 <CardActionArea>
                     <CardMedia
@@ -15,7 +13,6 @@ const RestaurantCard = ({ cardData }) => {
                         height="150"
                         image={`https://media-assets.swiggy.com/swiggy/image/upload/fl_lossy,f_auto,q_auto,w_660/${cloudinaryImageId}`}
                         alt="green iguana"
-
                         sx={{
                             borderRadius: 3
                         }}
@@ -52,7 +49,6 @@ const RestaurantCard = ({ cardData }) => {
                                 </Stack>
                             </Stack>
                             <Typography variant="body1" sx={{ color: "text.secondary", fontFamily: "Gilroy" }}>{cuisines?.join(", ")}</Typography>
-
                         </Stack>
                     </CardContent>
                 </CardActionArea>

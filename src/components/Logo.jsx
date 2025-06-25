@@ -5,7 +5,6 @@ import { IMG_URL } from "../utils/appConstants"
 const Logo = () => {
 
     const { LOGO_URL } = IMG_URL;
-    console.log(LOGO_URL)
     return (
         <Box
             sx={{
